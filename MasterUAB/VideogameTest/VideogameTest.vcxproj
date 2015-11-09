@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{E7F70A58-36D4-44A5-B57C-70D494AE375D}</ProjectGuid>
+    <ProjectGuid>{E4E498DB-6EBF-4CFD-B60F-D203F80CE1B9}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Videogame</RootNamespace>
   </PropertyGroup>
