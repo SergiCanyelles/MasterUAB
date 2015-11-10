@@ -7,6 +7,11 @@ private:
 	ID3D11Device *l_D3DDevice; // esta clase, el device, nos sirve para crear objetos de DirectX
 	ID3D11DeviceContext *l_DeviceContext; // el contexto nos va a servir para usar objetos de DirectX
 	IDXGISwapChain *l_SwapChain; // la cadena de swap
+	ID3D11RenderTargetView *l_RenderTargetView;
+
+	double R;
+	double G;
+	double B;
 
 public:
 	CContextManager(void);
@@ -18,6 +23,9 @@ public:
 
 	LRESULT CreateContext(HWND &hWnd, int width, int height);
 
+	int GetRenderTarget();
+	
+	void Draw();
 	void Render();
 	bool InitDevice();
 };
