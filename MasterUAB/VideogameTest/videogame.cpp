@@ -93,7 +93,7 @@ int APIENTRY WinMain(HINSTANCE _hInstance, HINSTANCE _hPrevInstance, LPSTR _lpCm
 
 	// Mostrar la ventana
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
-	contextManager->GetRenderTarget();
+	//contextManager->GetRenderTarget();
 
 	// TODO Crear el back buffer
 	//CreateBackBuffer( hWnd, WIDTH_APPLICATION, HEIGHT_APPLICATION );
@@ -115,7 +115,7 @@ int APIENTRY WinMain(HINSTANCE _hInstance, HINSTANCE _hPrevInstance, LPSTR _lpCm
     }
     else
     {
-		contextManager->Draw();
+		//contextManager->Draw();
        // Main loop: Añadir aquí el Update y Render de la aplicación principal
     }
   }
