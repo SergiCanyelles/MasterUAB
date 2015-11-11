@@ -40,6 +40,8 @@ HRESULT CContextManager::CreateContext(HWND hWnd, int Width, int Height)
 	D3D_FEATURE_LEVEL featureLevels[] =
 	{
 		D3D_FEATURE_LEVEL_11_0,
+		D3D_FEATURE_LEVEL_10_0,
+		D3D_FEATURE_LEVEL_10_1,
 	};
 	UINT numFeatureLevels = ARRAYSIZE(featureLevels);
 
@@ -260,7 +262,8 @@ void CContextManager::InitRasterizedStates()
 	{
 		D3D11_RASTERIZER_DESC l_WireframeDesc;
 		ZeroMemory(&l_WireframeDesc, sizeof(D3D11_RASTERIZER_DESC));
-		l_WireframeDesc.FillMode = D3D11_FILL_WIREFRAME;
+		//l_WireframeDesc.FillMode = D3D11_FILL_WIREFRAME;
+		l_WireframeDesc.FillMode = D3D11_FILL_SOLID;
 		l_WireframeDesc.CullMode = D3D11_CULL_NONE;
 		l_WireframeDesc.FrontCounterClockwise = true;
 

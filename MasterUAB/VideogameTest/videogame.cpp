@@ -1,6 +1,8 @@
 #include <Windows.h>
 #include <d3d11.h>
 #include <ContextManager.h>
+#include "Application.h"
+#include "DebugRender.h"
 
 #pragma comment(lib,"d3d11.lib")
 
@@ -12,6 +14,7 @@
 	int WIDTH_APPLICATION = 800;
 	int HEIGHT_APPLICATION = 600;
 	LRESULT CreateContext(HWND &hWnd, int width, int height);
+
 
 //-----------------------------------------------------------------------------
 // Name: MsgProc()
@@ -50,62 +53,49 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 //-----------------------------------------------------------------------
 int APIENTRY WinMain(HINSTANCE _hInstance, HINSTANCE _hPrevInstance, LPSTR _lpCmdLine, int _nCmdShow)
 {
-	int width;
-	int height;
+	int width = 800;
+	int height = 600;
 
-  // Register the window class
-  WNDCLASSEX wc = {	sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL, APPLICATION_NAME, NULL };
+	// Register the window class
+	WNDCLASSEX wc = {	sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL, APPLICATION_NAME, NULL };
 
-  RegisterClassEx( &wc );
+	RegisterClassEx( &wc );
 
   	l_D3DDevice = 0;
 	l_DeviceContext = 0;
 	l_SwapChain = 0;
 
-  /*
-  // Create the application's window
-  HWND hWnd = CreateWindow(	APPLICATION_NAME, APPLICATION_NAME, WS_OVERLAPPEDWINDOW, 100, 100, 800, 600, NULL, NULL, wc.hInstance, NULL );
-
-
-
-  // Añadir aquí el Init de la applicacioón
-
-  
-  ShowWindow( hWnd, SW_SHOWDEFAULT );
-  UpdateWindow( hWnd );
-
-  */
-  	// Calcular el tamano de nuestra ventana
-	RECT rc = {
-			0, 0, WIDTH_APPLICATION, HEIGHT_APPLICATION
-		};
+	// Calcular el tamano de nuestra ventana
+	RECT rc = {0, 0, WIDTH_APPLICATION, HEIGHT_APPLICATION};
 	AdjustWindowRect( &rc, WS_OVERLAPPEDWINDOW, FALSE);
 	
-	width =  rc.right - rc.left;
-	height =  rc.bottom - rc.top;
+	//width =  rc.right - rc.left;
+	//height =  rc.bottom - rc.top;
 
-	// Crear la ventana en si
-	HWND hWnd = CreateWindow( APPLICATION_NAME, APPLICATION_NAME, WS_OVERLAPPEDWINDOW, 100, 100, width, height, NULL, NULL, wc.hInstance, NULL);
+	// Create the application's window
+	HWND hWnd = CreateWindow(	APPLICATION_NAME, APPLICATION_NAME, WS_OVERLAPPEDWINDOW, 100, 100, 800, 600, NULL, NULL, wc.hInstance, NULL );
+  	
+	// Añadir aquí el Init de la applicacioón
+	CContextManager context;
+	context.CreateContext(hWnd, width, height);
 
-	// TODO Crear el contexto DIRECTX
-	CContextManager *contextManager = new CContextManager();
-	contextManager->CreateContext(hWnd, width, height);
+	ShowWindow( hWnd, SW_SHOWDEFAULT );
 
-	// Mostrar la ventana
-	ShowWindow(hWnd, SW_SHOWDEFAULT);
-	//contextManager->GetRenderTarget();
+	context.CreateBackBuffer(hWnd,800,600); 
+	context.InitStates();
+	CDebugRender debugRender(context.GetDevice());
 
-	// TODO Crear el back buffer
-	//CreateBackBuffer( hWnd, WIDTH_APPLICATION, HEIGHT_APPLICATION );
-
+	CApplication application(&debugRender, &context);
+		
 	UpdateWindow(hWnd);
+	MSG msg;
+	ZeroMemory(&msg, sizeof(msg));
 
 
-  MSG msg;
-  ZeroMemory( &msg, sizeof(msg) );
 
   // Añadir en el while la condición de salida del programa de la aplicación
-
+	
+	DWORD m_PreviousTime = timeGetTime();
   while( msg.message != WM_QUIT )
   {
     if( PeekMessage( &msg, NULL, 0U, 0U, PM_REMOVE ) )
@@ -115,6 +105,12 @@ int APIENTRY WinMain(HINSTANCE _hInstance, HINSTANCE _hPrevInstance, LPSTR _lpCm
     }
     else
     {
+		DWORD l_CurrentTime = timeGetTime();
+		float m_ElapsedTime = (float)(l_CurrentTime - m_PreviousTime)*0.001f;
+		m_PreviousTime = l_CurrentTime;
+
+		application.Update(m_ElapsedTime);
+		application.Render();
 		//contextManager->Draw();
        // Main loop: Añadir aquí el Update y Render de la aplicación principal
     }

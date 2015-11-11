@@ -6,6 +6,8 @@
 #include "ContextManager.h"
 #include "DebugRender.h"
 
+#pragma comment(lib,"winmm.lib")
+
 CApplication::CApplication(CDebugRender *_DebugRender, CContextManager *_ContextManager)
 	: m_DebugRender(_DebugRender)
 	, m_ContextManager(_ContextManager)
@@ -21,13 +23,7 @@ CApplication::~CApplication()
 
 void CApplication::Update(float _ElapsedTime)
 {
-	// TODO
-
-	// DWORD l_CurrentTime = timeGetTime();
-	// m_ElapsedTime = (float)(l_CurrentTime - m_PreviousTime)*0.001f;
-	// m_PreviousTime = l_CurrentTime;
-	
-	m_WorldRotation += .00013f;
+	m_WorldRotation += .5f * _ElapsedTime;
 	while (m_WorldRotation > FLOAT_PI_VALUE * 2)
 	{
 		m_WorldRotation -= FLOAT_PI_VALUE * 2;
