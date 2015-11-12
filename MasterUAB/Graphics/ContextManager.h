@@ -9,6 +9,7 @@ class CRenderableVertexs;
 
 class CContextManager
 {
+
 public:
 
 	enum ERasterizedState
@@ -19,7 +20,6 @@ public:
 		RS_COUNT
 	};
 
-public:
 	CContextManager();
 	~CContextManager();
 
@@ -42,6 +42,8 @@ public:
 	void SetCamera(const Mat44f& _View, const Mat44f& _Projection) { m_Parameters.m_View = _View; m_Parameters.m_Projection = _Projection; }
 	void SetCamera(const CCamera& _Camera) { m_Parameters.m_View = _Camera.GetView(); m_Parameters.m_Projection = _Camera.GetProjection(); }
 	void SetDebugSize(float _Size) { m_Parameters.m_DebugRenderScale = _Size; }
+	void CContextManager::Resize(HWND hWnd, unsigned int Width, unsigned int Height);
+	float GetAspectRatio() const {return (float)width/(float)height;}
 
 private:
 
@@ -56,9 +58,11 @@ private:
 
 	CEffectParameters m_Parameters;
 
-
 	ID3D11RasterizerState*	m_RS[RS_COUNT];
 	// TODO ID3D11DepthStencilState
 	// TODO ID3D11BlendState
+
+	int height;
+	int width;
 };
 

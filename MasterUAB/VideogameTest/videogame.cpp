@@ -1,8 +1,9 @@
 #include <Windows.h>
 #include <d3d11.h>
-#include <ContextManager.h>
+#include "ContextManager.h"
 #include "Application.h"
 #include "DebugRender.h"
+#include "InputManagerImplementation.h"
 
 #pragma comment(lib,"d3d11.lib")
 
@@ -14,7 +15,12 @@
 	int WIDTH_APPLICATION = 800;
 	int HEIGHT_APPLICATION = 600;
 	LRESULT CreateContext(HWND &hWnd, int width, int height);
+	CContextManager context;
+	CInputManagerImplementation *input;
 
+	float l_CurrentTime;
+	float l_ElapsedTime;
+	float l_PreviousTime;
 
 //-----------------------------------------------------------------------------
 // Name: MsgProc()
@@ -40,10 +46,16 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
         PostQuitMessage( 0 );
         return 0;
         break;
-      }
+	  }
     }
     break;
-  }//end switch( msg )
+	case WM_SIZE:
+		if (wParam != SIZE_MINIMIZED)
+		{
+			context.Resize(hWnd, (UINT)LOWORD(lParam), (UINT)HIWORD(lParam));
+		}
+		return 0;
+	  }//end switch( msg )
 
   return DefWindowProc( hWnd, msg, wParam, lParam );
 }
@@ -53,11 +65,12 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 //-----------------------------------------------------------------------
 int APIENTRY WinMain(HINSTANCE _hInstance, HINSTANCE _hPrevInstance, LPSTR _lpCmdLine, int _nCmdShow)
 {
-	int width = 800;
-	int height = 600;
-
 	// Register the window class
-	WNDCLASSEX wc = {	sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL, APPLICATION_NAME, NULL };
+	WNDCLASSEX wc = {sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL, APPLICATION_NAME, NULL };
+
+	input = new CInputManagerImplementation;
+	CInputManager::SetCurrentInputManager(input);
+	input->LoadCommandsFromFile("Data\\input.xml");
 
 	RegisterClassEx( &wc );
 
@@ -76,8 +89,7 @@ int APIENTRY WinMain(HINSTANCE _hInstance, HINSTANCE _hPrevInstance, LPSTR _lpCm
 	HWND hWnd = CreateWindow(	APPLICATION_NAME, APPLICATION_NAME, WS_OVERLAPPEDWINDOW, 100, 100, 800, 600, NULL, NULL, wc.hInstance, NULL );
   	
 	// Añadir aquí el Init de la applicacioón
-	CContextManager context;
-	context.CreateContext(hWnd, width, height);
+	context.CreateContext(hWnd, WIDTH_APPLICATION, HEIGHT_APPLICATION);
 
 	ShowWindow( hWnd, SW_SHOWDEFAULT );
 
@@ -96,25 +108,41 @@ int APIENTRY WinMain(HINSTANCE _hInstance, HINSTANCE _hPrevInstance, LPSTR _lpCm
   // Añadir en el while la condición de salida del programa de la aplicación
 	
 	DWORD m_PreviousTime = timeGetTime();
-  while( msg.message != WM_QUIT )
-  {
-    if( PeekMessage( &msg, NULL, 0U, 0U, PM_REMOVE ) )
-    {
-      TranslateMessage( &msg );
-      DispatchMessage( &msg );
-    }
-    else
-    {
-		DWORD l_CurrentTime = timeGetTime();
-		float m_ElapsedTime = (float)(l_CurrentTime - m_PreviousTime)*0.001f;
-		m_PreviousTime = l_CurrentTime;
+	while( msg.message != WM_QUIT )
+	{
+		if (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE))
+			{
+				switch (msg.message)
+				{
+				case WM_SYSKEYDOWN:
+				case WM_SYSKEYUP:
+				case WM_KEYDOWN:
+				case WM_KEYUP:
+					if (!input->KeyEventReceived(msg.wParam, msg.lParam))
+					{
+						TranslateMessage(&msg);
+						DispatchMessage(&msg);
+					}
+					break;
+				default:
+					TranslateMessage(&msg);
+					DispatchMessage(&msg);
+				}
+			}
+			else
+			{
+				input->BeginFrame();
+				// Main loop: Añadir aquí el Update y Render de la aplicación principal
+				l_CurrentTime = timeGetTime();
+				l_ElapsedTime = (float)(l_CurrentTime - l_PreviousTime)*0.001f;
+				l_PreviousTime = l_CurrentTime;
+				application.Update(l_ElapsedTime);
+				application.Render();
+				input->EndFrame();
+		}
 
-		application.Update(m_ElapsedTime);
-		application.Render();
-		//contextManager->Draw();
-       // Main loop: Añadir aquí el Update y Render de la aplicación principal
-    }
-  }
+	}
+
   UnregisterClass( APPLICATION_NAME, wc.hInstance );
 
   // Añadir una llamada a la alicación para finalizar/liberar memoria de todos sus datos
